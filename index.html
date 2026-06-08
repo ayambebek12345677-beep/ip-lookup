@@ -1,0 +1,63 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>IP Lookup</title>
+<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Segoe UI',sans-serif;background:#0f0f23;color:#fff;min-height:100vh;display:flex;justify-content:center;align-items:center}
+.ob{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.92);z-index:1000;display:flex;justify-content:center;align-items:center}.ob.hide{display:none}
+.oc{background:#1a1a3e;border-radius:20px;padding:40px;max-width:500px;width:90%;text-align:center}
+.oc h2{color:#74b9ff;font-size:28px;margin-bottom:8px}.oc .sub{color:#888;font-size:14px}
+.stps{margin:25px 0;text-align:left;display:flex;flex-direction:column;gap:18px}
+.st{display:flex;gap:14px;align-items:flex-start}.st .n{width:32px;height:32px;border-radius:50%;background:#74b9ff;color:#000;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px}
+.st h4{font-size:14px;margin-bottom:2px}.st p{font-size:12px;color:#888;line-height:1.5}
+.oc button{padding:14px 40px;border:none;border-radius:10px;background:#74b9ff;color:#000;font-size:16px;font-weight:700;cursor:pointer}
+.oc .sk{color:#555;font-size:12px;cursor:pointer;margin-top:12px;display:inline-block}
+.app{display:none;max-width:600px;width:100%;padding:20px;text-align:center}.app.show{display:block}
+h1{margin-bottom:5px}h1 span{background:linear-gradient(90deg,#74b9ff,#a29bfe);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sub2{color:#666;margin-bottom:20px;font-size:14px}
+.search-row{display:flex;justify-content:center;gap:10px;margin-bottom:20px}
+.search-row input{padding:12px 18px;border:2px solid #333;border-radius:10px;background:#1a1a3e;color:#fff;font-size:15px;width:250px;text-align:center}
+.search-row input:focus{outline:none;border-color:#74b9ff}
+.search-row button{padding:12px 20px;border:none;border-radius:10px;background:#74b9ff;color:#000;font-weight:600;cursor:pointer}
+.ip-display{font-size:36px;font-weight:700;font-family:monospace;color:#74b9ff;margin-bottom:5px}
+.ip-label{font-size:12px;color:#666;margin-bottom:20px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px}
+.card{background:#1a1a3e;border:1px solid #2a2a4e;border-radius:12px;padding:15px;text-align:left}
+.card .icon{font-size:20px;margin-bottom:6px}
+.card .label{font-size:11px;color:#666;margin-bottom:3px}
+.card .val{font-size:15px;font-weight:600}
+.loading{text-align:center;color:#888;padding:20px}
+.error{text-align:center;color:#ff6b6b;padding:20px}
+</style></head><body>
+<div class="ob" id="ob"><div class="oc">
+<h2>IP Lookup</h2><p class="sub">Discover your IP address and location</p>
+<div class="stps">
+<div class="st"><div class="n">1</div><div><h4>Auto-Detect</h4><p>Your public IP is detected automatically when you open the app.</p></div></div>
+<div class="st"><div class="n">2</div><div><h4>View Details</h4><p>See your city, country, ISP, timezone, and coordinates in info cards.</p></div></div>
+<div class="st"><div class="n">3</div><div><h4>Search Any IP</h4><p>Enter a different IP address to look up its information.</p></div></div>
+</div>
+<button onclick="start()">Open Lookup</button>
+<div class="sk" onclick="start()">Skip</div>
+</div></div>
+<div class="app" id="app">
+<h1><span>IP Lookup</span></h1><p class="sub2">Your public IP and location info</p>
+<div class="search-row"><input type="text" id="ipInput" placeholder="Enter IP or leave blank for yours"><button onclick="lookup()">Lookup</button></div>
+<div id="content"><div class="loading">Loading...</div></div></div>
+<script>
+function start(){document.getElementById('ob').classList.add('hide');document.getElementById('app').classList.add('show');localStorage.setItem('ip_seen','1');lookup()}
+if(localStorage.getItem('ip_seen')){document.getElementById('ob').classList.add('hide');document.getElementById('app').classList.add('show')}
+function lookup(){
+var ip=document.getElementById('ipInput').value.trim();
+var url=ip?'https://ipapi.co/'+ip+'/json/':'https://ipapi.co/json/';
+document.getElementById('content').innerHTML='<div class="loading">Loading...</div>';
+fetch(url).then(function(r){return r.json()}).then(function(d){
+if(d.error){document.getElementById('content').innerHTML='<div class="error">Error: '+d.reason+'</div>';return}
+document.getElementById('content').innerHTML=
+'<div class="ip-display">'+d.ip+'</div><div class="ip-label">'+(d.version||'IPv4')+'</div>'+
+'<div class="grid">'+
+'<div class="card"><div class="icon">\ud83c\udf0d</div><div class="label">Country</div><div class="val">'+d.country_name+' ('+d.country_code+')</div></div>'+
+'<div class="card"><div class="icon">\ud83c\udfd4\ufe0f</div><div class="label">City</div><div class="val">'+(d.city||'Unknown')+'</div></div>'+
+'<div class="card"><div class="icon">\ud83d\udcd0</div><div class="label">Region</div><div class="val">'+(d.region||'Unknown')+'</div></div>'+
+'<div class="card"><div class="icon">\ud83c\udf10</div><div class="label">ISP</div><div class="val">'+(d.org||'Unknown')+'</div></div>'+
+'<div class="card"><div class="icon">\u231a</div><div class="label">Timezone</div><div class="val">'+(d.timezone||'Unknown')+'</div></div>'+
+'<div class="card"><div class="icon">\ud83d\udccd</div><div class="label">Coordinates</div><div class="val">'+(d.latitude||'?')+', '+(d.longitude||'?')+'</div></div>'+
+'<div class="card"><div class="icon">\ud83d\udcee</div><div class="label">Postal</div><div class="val">'+(d.postal||'N/A')+'</div></div>'+
+'<div class="card"><div class="icon">\ud83d\udcfa</div><div class="label">ASN</div><div class="val">'+(d.asn||'Unknown')+'</div></div>'+
+'</div>'}).catch(function(e){document.getElementById('content').innerHTML='<div class="error">Failed to fetch IP data</div>'})}
+</script></body></html>
